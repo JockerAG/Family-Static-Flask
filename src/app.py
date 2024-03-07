@@ -15,6 +15,8 @@ CORS(app)
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
 
+# jsonify() = convierte la información de python en el formato de json = Javascript Object Notation, para que podamos recibir la información  
+# . get() busca el valor entre ()
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -31,12 +33,48 @@ def handle_hello():
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
     response_body = {
-        "hello": "world",
-        "family": members
+        "miembros": members
     }
 
 
     return jsonify(response_body), 200
+
+
+@app.route('/member', methods=['POST'])
+def add_member():
+    new_member = request.json
+    print(new_member)
+    
+    jackson_family.add_member(new_member)
+    return jsonify({"msg": "Usuario creado"}), 200
+
+
+@app.route('/member/<int:member_id>', methods=['DELETE'])
+def delete_family_member(member_id):
+    eliminar_familiar = jackson_family.delete_member(member_id)
+    if not eliminar_familiar:
+        return jsonify({"msg": "Familiar no encontrado"}), 400 
+    return jsonify({"Correcto": "Familiar borrado"}), 200
+
+
+@app.route('/member/<int:member_id>', methods=['PUT'])
+def update_family_member(member_id):
+    new_member = request.json
+    updated_member = jackson_family.update_member(member_id, new_member)
+    if not updated_member:
+        return jsonify({"msg": "No se encontro al miembro"}), 400
+    return jsonify({"Correcto": "Miembro borrado"})
+    
+
+@app.route('/member/<int:member_id>', methods=['GET'])
+def get_one_member(member_id):
+    miembro_encontrado = jackson_family.get_member(member_id)
+    if not miembro_encontrado:
+        return jsonify({"msg": "No se encontro al miembro"}), 400
+
+    return jsonify(miembro_encontrado), 200
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
